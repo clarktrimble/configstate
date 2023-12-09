@@ -1,0 +1,9 @@
+{
+  "uri": "http://pool05.boxworld.org/api/v2",
+  "capabilities": [
+    {
+      "name": "resize",
+      "capacity": 23
+    }
+  ]
+}

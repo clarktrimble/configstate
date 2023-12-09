@@ -1,0 +1,20 @@
+[
+  {
+    "uri": "http://pool04.boxworld.org/api/v2",
+    "capabilities": [
+      {
+        "name": "resize",
+        "capacity": 23
+      }
+    ]
+  },
+  {
+    "uri": "http://pool24.boxworld.org/api/v2",
+    "capabilities": [
+      {
+        "name": "resize",
+        "capacity": 5
+      }
+    ]
+  }
+]
