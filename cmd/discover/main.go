@@ -7,7 +7,6 @@ import (
 
 	"github.com/clarktrimble/delish"
 	"github.com/clarktrimble/delish/graceful"
-	"github.com/clarktrimble/delish/mid"
 	"github.com/clarktrimble/giant"
 	"github.com/clarktrimble/hondo"
 	"github.com/clarktrimble/launch"
@@ -40,7 +39,7 @@ type Config struct {
 
 func main() {
 
-	// load config, setup logger
+	// load config and setup logger
 
 	cfg := &Config{Version: version}
 	launch.Load(cfg, cfgPrefix, blerb)
@@ -49,31 +48,25 @@ func main() {
 	ctx := lgr.WithFields(context.Background(), "app_id", appId, "run_id", hondo.Rand(7))
 	lgr.Info(ctx, "starting up", "config", cfg)
 
+	// init graceful and create router
+
 	ctx = graceful.Initialize(ctx, &wg, lgr)
 
-	// discover
+	rtr := chi.New()
+	rtr.Set("GET", "/config", delish.ObjHandler("config", cfg, lgr))
+
+	// start discovery
 
 	client := cfg.Client.NewWithTrippers(lgr)
 	csl := cfg.Consul.New(client)
 	dsc := cfg.Discover.New(lgr, csl)
 
 	dsc.Start(ctx, &wg)
-
-	// setup service layer
-
-	rtr := chi.New()
-
-	handler := mid.LogResponse(lgr, rtr)
-	handler = mid.LogRequest(lgr, hondo.Rand, handler)
-	handler = mid.ReplaceCtx(ctx, handler)
-
-	server := cfg.Server.New(handler, lgr)
-
-	rtr.Set("GET", "/config", server.ObjHandler("config", cfg))
 	rtr.Set("GET", "/services", dsc.GetServices)
 
 	// delicious!
 
+	server := cfg.Server.NewWithLog(ctx, rtr, lgr)
 	server.Start(ctx, &wg)
 	graceful.Wait(ctx)
 }

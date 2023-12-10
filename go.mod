@@ -3,8 +3,8 @@ module configstate
 go 1.21.1
 
 require (
-	github.com/clarktrimble/delish v0.0.1
-	github.com/clarktrimble/giant v0.0.4-0.20231208211617-b84a43340105
+	github.com/clarktrimble/delish v0.0.2-0.20231210153756-63607e1aec1a
+	github.com/clarktrimble/giant v0.0.4-0.20231209163004-64315c3d8553
 	github.com/clarktrimble/hondo v0.0.2
 	github.com/clarktrimble/launch v0.0.3
 	github.com/clarktrimble/sabot v0.0.3
