@@ -18,41 +18,32 @@ type Logger interface {
 	WithFields(ctx context.Context, kv ...interface{}) context.Context
 }
 
-type Watcher interface {
-	Watch(ctx context.Context, key string) (data []byte, err error)
+// Poller specifies a poller, returning data every so often that might be updated.
+type Poller interface {
+	Poll(ctx context.Context) (data []byte, err error)
 }
 
+// Capability represents something a service can do.
 type Capability struct {
 	Name     string `json:"name"`
 	Capacity int    `json:"capacity"`
 }
 
+// Service is a service on the network.
 type Service struct {
 	Uri  string       `json:"uri"`
 	Caps []Capability `json:"capabilities"`
 }
 
-type Config struct {
-	Key string `json:"key" desc:"discoverable services key" required:"true"`
-}
-
+// Discover polls for available services.
 type Discover struct {
 	Logger   Logger
-	Watcher  Watcher
-	Key      string
+	Poller   Poller
 	services []Service
 	mu       sync.RWMutex
 }
 
-func (cfg *Config) New(lgr Logger, wchr Watcher) *Discover {
-
-	return &Discover{
-		Logger:  lgr,
-		Watcher: wchr,
-		Key:     cfg.Key,
-	}
-}
-
+// Services returns available services.
 func (dsc *Discover) Services() (services []Service) {
 
 	services = make([]Service, len(dsc.services))
@@ -64,6 +55,7 @@ func (dsc *Discover) Services() (services []Service) {
 	return services
 }
 
+// Start starts the polling worker.
 func (dsc *Discover) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	ctx = dsc.Logger.WithFields(ctx, "worker_id", hondo.Rand(7))
@@ -77,7 +69,7 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 
 	for {
 
-		data, err := dsc.Watcher.Watch(ctx, dsc.Key)
+		data, err := dsc.Poller.Poll(ctx)
 		if errors.Is(err, context.Canceled) {
 			dsc.Logger.Info(ctx, "worker shutting down")
 			break

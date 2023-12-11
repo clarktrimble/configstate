@@ -32,6 +32,8 @@ make
 bin/discover | jq
 ```
 
+http://tartu:8500/ui/dc1/kv/bargle/edit
+
 
 
 ## configstate
@@ -45,3 +47,7 @@ Suppose we have a PhotoBook service and one of it's many features it to resize p
 This sort of thing can be labor-intensive and we have broken resize out into its own separatly scalable service.
 We're strapped for time/money in the beginning and its a reasonable shortcut to simply configure PhotoBook so it knows about available resize services.
 
+
+Long poll feels like a good fit here.
+ - yes change in configstate is an event
+ - but need a good "backstop" and on startup can do the same thing

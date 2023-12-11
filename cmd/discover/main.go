@@ -29,12 +29,11 @@ var (
 )
 
 type Config struct {
-	Version  string           `json:"version" ignored:"true"`
-	Logger   *sabot.Config    `json:"logger"`
-	Client   *giant.Config    `json:"http_client"`
-	Server   *delish.Config   `json:"http_server"`
-	Consul   *consul.Config   `json:"consul"`
-	Discover *discover.Config `json:"discover"`
+	Version string         `json:"version" ignored:"true"`
+	Logger  *sabot.Config  `json:"logger"`
+	Client  *giant.Config  `json:"http_client"`
+	Server  *delish.Config `json:"http_server"`
+	Consul  *consul.Config `json:"consul"`
 }
 
 func main() {
@@ -59,7 +58,7 @@ func main() {
 
 	client := cfg.Client.NewWithTrippers(lgr)
 	csl := cfg.Consul.New(client)
-	dsc := cfg.Discover.New(lgr, csl)
+	dsc := &discover.Discover{Logger: lgr, Poller: csl}
 
 	dsc.Start(ctx, &wg)
 	rtr.Set("GET", "/services", dsc.GetServices)

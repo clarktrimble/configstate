@@ -35,3 +35,4 @@ ${TARGETS}:
 
 .PHONY: test discover
 
+## Todo: clean; rm bin at least, can has "obj"'s as well?
