@@ -1,12 +1,11 @@
 package discover
 
 import (
+	"configstate/entity"
 	"context"
 	"encoding/json"
-	"net/http"
 	"sync"
 
-	"github.com/clarktrimble/delish"
 	"github.com/clarktrimble/hondo"
 	"github.com/pkg/errors"
 )
@@ -23,30 +22,18 @@ type Poller interface {
 	Poll(ctx context.Context) (data []byte, err error)
 }
 
-// Capability represents something a service can do.
-type Capability struct {
-	Name     string `json:"name"`
-	Capacity int    `json:"capacity"`
-}
-
-// Service is a service on the network.
-type Service struct {
-	Uri  string       `json:"uri"`
-	Caps []Capability `json:"capabilities"`
-}
-
 // Discover polls for available services.
 type Discover struct {
 	Logger   Logger
 	Poller   Poller
-	services []Service
+	services []entity.Service
 	mu       sync.RWMutex
 }
 
 // Services returns available services.
-func (dsc *Discover) Services() (services []Service) {
+func (dsc *Discover) Services() (services []entity.Service) {
 
-	services = make([]Service, len(dsc.services))
+	services = make([]entity.Service, len(dsc.services))
 
 	dsc.mu.RLock()
 	copy(services, dsc.services)
@@ -65,6 +52,8 @@ func (dsc *Discover) Start(ctx context.Context, wg *sync.WaitGroup) {
 	go dsc.work(ctx, wg)
 }
 
+// unexported
+
 func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 
 	for {
@@ -79,7 +68,7 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 			continue
 		}
 
-		services := []Service{}
+		services := []entity.Service{}
 		err = json.Unmarshal(data, &services)
 		if err != nil {
 			err = errors.Wrapf(err, "failed to unmarshal services given: %s", data)
@@ -99,50 +88,3 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 	wg.Done()
 	dsc.Logger.Info(ctx, "worker stopped")
 }
-
-// Todo: prolly move this handler away -- delish dep is yuch?
-// orrr: store bytes and skip hand-wrings seen in commented delish code below??
-func (dsc *Discover) GetServices(writer http.ResponseWriter, request *http.Request) {
-
-	rp := &delish.Respond{
-		Writer: writer,
-		Logger: dsc.Logger,
-	}
-
-	rp.WriteObjects(request.Context(), map[string]any{"services": dsc.Services()})
-}
-
-/*
-func (rp *Respond) WriteObjects(ctx context.Context, objects map[string]any) {
-
-	header(rp.Writer, 0)
-
-	data, err := json.Marshal(objects)
-	if err != nil {
-		err = errors.Wrapf(err, "somehow failed to encode: %#v", objects)
-		rp.Logger.Error(ctx, "failed to encode response", err)
-
-		rp.Writer.WriteHeader(http.StatusInternalServerError)
-		rp.Write(ctx, []byte(`{"error": "failed to encode response"}`))
-	}
-
-	rp.Write(ctx, data)
-}
-func (rp *Respond) Write(ctx context.Context, data []byte) {
-
-	// leaving content-type as exercise for handler
-
-	_, err := rp.Writer.Write(data)
-	if err != nil {
-		err = errors.Wrapf(err, "failed to write response")
-		rp.Logger.Error(ctx, "failed to write response", err)
-	}
-}
-func header(writer http.ResponseWriter, code int) {
-
-	writer.Header().Set("content-type", "application/json")
-	if code != 0 {
-		writer.WriteHeader(code)
-	}
-}
-*/

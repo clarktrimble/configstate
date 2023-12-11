@@ -15,6 +15,7 @@ import (
 	"configstate/chi"
 	"configstate/consul"
 	"configstate/discover"
+	"configstate/svc"
 )
 
 const (
@@ -61,7 +62,14 @@ func main() {
 	dsc := &discover.Discover{Logger: lgr, Poller: csl}
 
 	dsc.Start(ctx, &wg)
-	rtr.Set("GET", "/services", dsc.GetServices)
+
+	// setup service layer
+
+	svc := &svc.Svc{
+		Logger:     lgr,
+		Discoverer: dsc,
+	}
+	rtr.Set("GET", "/services", svc.GetServices)
 
 	// delicious!
 
