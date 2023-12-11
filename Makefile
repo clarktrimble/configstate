@@ -1,7 +1,7 @@
 EXECS   := $(wildcard cmd/*)
 TARGETS := ${EXECS:cmd/%=%}
 
-TESTA   := ${shell go list ./... | grep -v /cmd/ | grep -v /test/}
+TESTA   := ${shell go list ./... | grep -v /cmd/ | grep -v /test/ | grep -v /mock}
 
 BRANCH   := ${shell git branch --show-current}
 REVCNT   := ${shell git rev-list --count $(BRANCH)}

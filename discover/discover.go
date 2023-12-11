@@ -2,13 +2,17 @@ package discover
 
 import (
 	"configstate/entity"
+	"configstate/respond"
 	"context"
 	"encoding/json"
+	"net/http"
 	"sync"
 
 	"github.com/clarktrimble/hondo"
 	"github.com/pkg/errors"
 )
+
+//go:generate moq -pkg mock -out mock/mock.go . Logger Poller
 
 // Logger specifies a logger.
 type Logger interface {
@@ -22,6 +26,11 @@ type Poller interface {
 	Poll(ctx context.Context) (data []byte, err error)
 }
 
+// Router specifies a router.
+type Router interface {
+	Set(method, path string, handler http.HandlerFunc)
+}
+
 // Discover polls for available services.
 type Discover struct {
 	Logger   Logger
@@ -30,19 +39,19 @@ type Discover struct {
 	mu       sync.RWMutex
 }
 
-// Services returns available services.
+// Services returns a copy of available services.
 func (dsc *Discover) Services() (services []entity.Service) {
 
 	services = make([]entity.Service, len(dsc.services))
 
 	dsc.mu.RLock()
-	copy(services, dsc.services)
+	copy(services, dsc.services) // Todo: nil check
 	dsc.mu.RUnlock()
 
 	return services
 }
 
-// Start starts the polling worker.
+// Start starts the poll worker.
 func (dsc *Discover) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	ctx = dsc.Logger.WithFields(ctx, "worker_id", hondo.Rand(7))
@@ -50,6 +59,12 @@ func (dsc *Discover) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	wg.Add(1)
 	go dsc.work(ctx, wg)
+}
+
+// Register registers routes with the router.
+func (dsc *Discover) Register(rtr Router) {
+
+	rtr.Set("GET", "/services", dsc.getServices)
 }
 
 // unexported
@@ -79,7 +94,6 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 		// Todo: hash or sommat?
 		dsc.Logger.Info(ctx, "updating services")
 
-		// Todo: mutex hand wring
 		dsc.mu.Lock()
 		dsc.services = services
 		dsc.mu.Unlock()
@@ -87,4 +101,14 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 
 	wg.Done()
 	dsc.Logger.Info(ctx, "worker stopped")
+}
+
+func (dsc *Discover) getServices(writer http.ResponseWriter, request *http.Request) {
+
+	rp := &respond.Respond{
+		Writer: writer,
+		Logger: dsc.Logger,
+	}
+
+	rp.WriteObjects(request.Context(), map[string]any{"services": dsc.Services()})
 }

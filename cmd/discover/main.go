@@ -15,7 +15,6 @@ import (
 	"configstate/chi"
 	"configstate/consul"
 	"configstate/discover"
-	"configstate/svc"
 )
 
 const (
@@ -32,9 +31,9 @@ var (
 type Config struct {
 	Version string         `json:"version" ignored:"true"`
 	Logger  *sabot.Config  `json:"logger"`
-	Client  *giant.Config  `json:"http_client"`
-	Server  *delish.Config `json:"http_server"`
+	Client  *giant.Config  `json:"http_client"` // Todo: rename ConsulClient or sommat
 	Consul  *consul.Config `json:"consul"`
+	Server  *delish.Config `json:"http_server"`
 }
 
 func main() {
@@ -55,23 +54,16 @@ func main() {
 	rtr := chi.New()
 	rtr.Set("GET", "/config", delish.ObjHandler("config", cfg, lgr))
 
-	// start discovery
+	// start discovery and register handler
 
 	client := cfg.Client.NewWithTrippers(lgr)
 	csl := cfg.Consul.New(client)
 	dsc := &discover.Discover{Logger: lgr, Poller: csl}
 
 	dsc.Start(ctx, &wg)
+	dsc.Register(rtr)
 
-	// setup service layer
-
-	svc := &svc.Svc{
-		Logger:     lgr,
-		Discoverer: dsc,
-	}
-	rtr.Set("GET", "/services", svc.GetServices)
-
-	// delicious!
+	// start server and wait for shutdown
 
 	server := cfg.Server.NewWithLog(ctx, rtr, lgr)
 	server.Start(ctx, &wg)

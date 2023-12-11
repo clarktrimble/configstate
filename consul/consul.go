@@ -10,6 +10,9 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// Todo: think about recursive
+// Todo: format in consul list list, svc returns obj - {"services": [...]}
+
 //go:generate moq -pkg mock -out mock/mock.go . Client
 
 const (
@@ -115,6 +118,7 @@ func (csl *Consul) Poll(ctx context.Context) (data []byte, err error) {
 	return
 }
 
+// KvResult is exported for test, bah.
 type KvResult struct {
 	CreateIndex uint64
 	ModifyIndex uint64
