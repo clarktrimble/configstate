@@ -49,7 +49,7 @@ func (dsc *Discover) Services() (services []entity.Service) {
 	services = make([]entity.Service, len(dsc.services))
 
 	dsc.mu.RLock()
-	copy(services, dsc.services) // Todo: nil check
+	copy(services, dsc.services)
 	dsc.mu.RUnlock()
 
 	return services
@@ -96,7 +96,6 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 		if dsc.sum == newSum {
 			continue
 		}
-		//fmt.Printf(">>> hash: %s\n", newSum)
 		dsc.sum = newSum
 
 		services := []entity.Service{}
