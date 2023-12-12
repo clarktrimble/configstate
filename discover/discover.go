@@ -1,15 +1,18 @@
 package discover
 
 import (
-	"configstate/entity"
-	"configstate/respond"
 	"context"
 	"encoding/json"
+	"fmt"
+	"hash/fnv"
 	"net/http"
 	"sync"
 
 	"github.com/clarktrimble/hondo"
 	"github.com/pkg/errors"
+
+	"configstate/entity"
+	"configstate/respond"
 )
 
 //go:generate moq -pkg mock -out mock/mock.go . Logger Poller
@@ -37,6 +40,7 @@ type Discover struct {
 	Poller   Poller
 	services []entity.Service
 	mu       sync.RWMutex
+	sum      string
 }
 
 // Services returns a copy of available services.
@@ -45,7 +49,7 @@ func (dsc *Discover) Services() (services []entity.Service) {
 	services = make([]entity.Service, len(dsc.services))
 
 	dsc.mu.RLock()
-	copy(services, dsc.services) // Todo: nil check
+	copy(services, dsc.services)
 	dsc.mu.RUnlock()
 
 	return services
@@ -71,6 +75,8 @@ func (dsc *Discover) Register(rtr Router) {
 
 func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 
+	hsh := fnv.New64a()
+
 	for {
 
 		data, err := dsc.Poller.Poll(ctx)
@@ -83,6 +89,15 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 			continue
 		}
 
+		hsh.Write(data)
+		newSum := fmt.Sprintf("%x", hsh.Sum(nil))
+		hsh.Reset()
+
+		if dsc.sum == newSum {
+			continue
+		}
+		dsc.sum = newSum
+
 		services := []entity.Service{}
 		err = json.Unmarshal(data, &services)
 		if err != nil {
@@ -91,7 +106,6 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 			continue
 		}
 
-		// Todo: hash or sommat?
 		dsc.Logger.Info(ctx, "updating services")
 
 		dsc.mu.Lock()
