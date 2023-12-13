@@ -2,8 +2,8 @@ package discover
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"hash"
 	"hash/fnv"
 	"net/http"
 	"sync"
@@ -25,6 +25,9 @@ type Logger interface {
 }
 
 // Poller specifies a poller, returning data every so often that might be updated.
+// Poll is expected to rate-limit itself in some reasonable way.
+//
+// Todo: consider moving interval and rate limit here.
 type Poller interface {
 	Poll(ctx context.Context) (data []byte, err error)
 }
@@ -41,6 +44,7 @@ type Discover struct {
 	services []entity.Service
 	mu       sync.RWMutex
 	sum      string
+	hash     hash.Hash
 }
 
 // Services returns a copy of available services.
@@ -75,7 +79,7 @@ func (dsc *Discover) Register(rtr Router) {
 
 func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 
-	hsh := fnv.New64a()
+	dsc.hash = fnv.New64a()
 
 	for {
 
@@ -88,20 +92,12 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 			dsc.Logger.Error(ctx, "failed to watch", err)
 			continue
 		}
-
-		hsh.Write(data)
-		newSum := fmt.Sprintf("%x", hsh.Sum(nil))
-		hsh.Reset()
-
-		if dsc.sum == newSum {
+		if dsc.unchanged(data) {
 			continue
 		}
-		dsc.sum = newSum
 
-		services := []entity.Service{}
-		err = json.Unmarshal(data, &services)
+		services, err := entity.DecodeServices(data)
 		if err != nil {
-			err = errors.Wrapf(err, "failed to unmarshal services given: %s", data)
 			dsc.Logger.Error(ctx, "failed to watch", err)
 			continue
 		}
@@ -115,6 +111,20 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 
 	wg.Done()
 	dsc.Logger.Info(ctx, "worker stopped")
+}
+
+func (dsc *Discover) unchanged(data []byte) bool {
+
+	dsc.hash.Write(data)
+	newSum := fmt.Sprintf("%x", dsc.hash.Sum(nil))
+	dsc.hash.Reset()
+
+	if dsc.sum == newSum {
+		return true
+	}
+
+	dsc.sum = newSum
+	return false
 }
 
 func (dsc *Discover) getServices(writer http.ResponseWriter, request *http.Request) {

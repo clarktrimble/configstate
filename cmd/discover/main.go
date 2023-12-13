@@ -1,3 +1,4 @@
+// Package main demonstrates a service that discovers other services available to it.
 package main
 
 import (
@@ -18,9 +19,9 @@ import (
 )
 
 const (
-	appId     string = "demo-cfgstate"
-	cfgPrefix string = "demo"
-	blerb     string = "'demo' demonstrates ..."
+	appId     string = "dsc-demo"
+	cfgPrefix string = "dsc"
+	blerb     string = "'discover' demonstrates service discovery"
 )
 
 var (
@@ -29,11 +30,11 @@ var (
 )
 
 type Config struct {
-	Version string         `json:"version" ignored:"true"`
-	Logger  *sabot.Config  `json:"logger"`
-	Client  *giant.Config  `json:"http_client"` // Todo: rename ConsulClient or sommat
-	Consul  *consul.Config `json:"consul"`
-	Server  *delish.Config `json:"http_server"`
+	Version      string         `json:"version" ignored:"true"`
+	Logger       *sabot.Config  `json:"logger"`
+	ConsulClient *giant.Config  `json:"consul_http_client"`
+	Consul       *consul.Config `json:"consul"`
+	Server       *delish.Config `json:"http_server"`
 }
 
 func main() {
@@ -56,9 +57,9 @@ func main() {
 
 	// start discovery and register handler
 
-	client := cfg.Client.NewWithTrippers(lgr)
+	client := cfg.ConsulClient.NewWithTrippers(lgr)
 	csl := cfg.Consul.New(client)
-	dsc := &discover.Discover{Logger: lgr, Poller: csl}
+	dsc := &discover.Discover{Poller: csl, Logger: lgr}
 
 	dsc.Start(ctx, &wg)
 	dsc.Register(rtr)

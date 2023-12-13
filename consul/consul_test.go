@@ -20,12 +20,14 @@ func TestConsul(t *testing.T) {
 var _ = Describe("Consul", func() {
 
 	var (
-		cfg    *Config
-		client *mock.ClientMock
-		csl    *Consul
-		ctx    context.Context
-		data   []byte
-		err    error
+		cfg     *Config
+		client  *mock.ClientMock
+		csl     *Consul
+		ctx     context.Context
+		data    []byte
+		err     error
+		encoded string
+		decoded string
 	)
 
 	BeforeEach(func() {
@@ -43,6 +45,8 @@ var _ = Describe("Consul", func() {
 		}
 		csl = cfg.New(client)
 		ctx = context.Background()
+		encoded = "WyAgeyAgICAidXJpIjogImh0dHA6Ly9wb29sMDQuYm94d29ybGQub3JnL2FwaS92MiIsICAgICJjYXBhYmlsaXRpZXMiOiBbICAgICAgeyAgICAgICAgIm5hbWUiOiAicmVzaXplIiwgICAgICAgICJjYXBhY2l0eSI6IDIzICAgICAgfSAgICBdICB9LCAgeyAgICAidXJpIjogImh0dHA6Ly9wb29sMjQuYm94d29ybGQub3JnL2FwaS92MiIsICAgICJjYXBhYmlsaXRpZXMiOiBbICAgICAgeyAgICAgICAgIm5hbWUiOiAicmVzaXplIiwgICAgICAgICJjYXBhY2l0eSI6IDUgICAgICB9ICAgIF0gIH1d"
+		decoded = `[  {    "uri": "http://pool04.boxworld.org/api/v2",    "capabilities": [      {        "name": "resize",        "capacity": 23      }    ]  },  {    "uri": "http://pool24.boxworld.org/api/v2",    "capabilities": [      {        "name": "resize",        "capacity": 5      }    ]  }]`
 	})
 
 	Describe("getting a key-value", func() {
@@ -147,8 +151,3 @@ var _ = Describe("Consul", func() {
 	})
 
 })
-
-const (
-	encoded string = "WyAgeyAgICAidXJpIjogImh0dHA6Ly9wb29sMDQuYm94d29ybGQub3JnL2FwaS92MiIsICAgICJjYXBhYmlsaXRpZXMiOiBbICAgICAgeyAgICAgICAgIm5hbWUiOiAicmVzaXplIiwgICAgICAgICJjYXBhY2l0eSI6IDIzICAgICAgfSAgICBdICB9LCAgeyAgICAidXJpIjogImh0dHA6Ly9wb29sMjQuYm94d29ybGQub3JnL2FwaS92MiIsICAgICJjYXBhYmlsaXRpZXMiOiBbICAgICAgeyAgICAgICAgIm5hbWUiOiAicmVzaXplIiwgICAgICAgICJjYXBhY2l0eSI6IDUgICAgICB9ICAgIF0gIH1d"
-	decoded string = `[  {    "uri": "http://pool04.boxworld.org/api/v2",    "capabilities": [      {        "name": "resize",        "capacity": 23      }    ]  },  {    "uri": "http://pool24.boxworld.org/api/v2",    "capabilities": [      {        "name": "resize",        "capacity": 5      }    ]  }]`
-)

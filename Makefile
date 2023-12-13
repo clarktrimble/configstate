@@ -9,7 +9,7 @@ REVHASH  := ${shell git log -1 --format="%h"}
 
 LDFLAGS  := -X main.version=${BRANCH}.${REVCNT}.${REVHASH}
 
-all: check build
+all: check clean build
 
 check: gen lint test
 
@@ -26,6 +26,9 @@ lint:
 test:
 	go test -count 1 ${TESTA}
 
+clean:
+	-rm -rf bin
+
 build: ${TARGETS}
 	@echo ":: Done"
 
@@ -35,4 +38,3 @@ ${TARGETS}:
 
 .PHONY: test discover
 
-## Todo: clean; rm bin at least, can has "obj"'s as well?

@@ -1,3 +1,4 @@
+// Package consul is a Consul Key-Value client.
 package consul
 
 import (
@@ -10,10 +11,9 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// Todo: think about recursive
-// Todo: format in consul list list, svc returns obj - {"services": [...]}
-
 //go:generate moq -pkg mock -out mock/mock.go . Client
+
+// Todo: consider adding recursive keys
 
 const (
 	kvPath      string = "/v1/kv/%s"
