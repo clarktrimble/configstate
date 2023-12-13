@@ -50,9 +50,8 @@ type Discover struct {
 // Services returns a copy of available services.
 func (dsc *Discover) Services() (services []entity.Service) {
 
-	services = make([]entity.Service, len(dsc.services))
-
 	dsc.mu.RLock()
+	services = make([]entity.Service, len(dsc.services))
 	copy(services, dsc.services)
 	dsc.mu.RUnlock()
 

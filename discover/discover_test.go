@@ -33,6 +33,7 @@ var _ = Describe("Discover", func() {
 			dsc          *Discover
 
 			data     string
+			mu       sync.RWMutex
 			dataSpec string
 			expected []entity.Service
 		)
@@ -57,6 +58,9 @@ var _ = Describe("Discover", func() {
 							return nil, err
 						}
 						time.Sleep(time.Microsecond)
+
+						mu.RLock()
+						defer mu.RUnlock()
 						return []byte(data), nil
 					},
 				},
@@ -88,7 +92,9 @@ var _ = Describe("Discover", func() {
 
 				Eventually(dsc.Services).Should(Equal(expected))
 
+				mu.Lock()
 				data = fmt.Sprintf(dataSpec, 55)
+				mu.Unlock()
 				expected[1].Caps[0].Capacity = 55
 
 				Eventually(dsc.Services).Should(Equal(expected))

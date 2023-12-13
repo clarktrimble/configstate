@@ -26,6 +26,9 @@ lint:
 test:
 	go test -count 1 ${TESTA}
 
+race:
+	CGO_ENABLED=1 go test -count 1 -race ${TESTA}
+
 clean:
 	-rm -rf bin
 
