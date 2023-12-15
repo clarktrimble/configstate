@@ -35,7 +35,7 @@ var _ = Describe("Discover", func() {
 			data     string
 			mu       sync.RWMutex
 			dataSpec string
-			expected []entity.Service
+			expected entity.Services
 		)
 
 		BeforeEach(func() {
@@ -70,7 +70,7 @@ var _ = Describe("Discover", func() {
 				{"uri":"http://pool04.boxworld.org/api/v2","capabilities":[{"name":"resize","capacity":23}]},
 				{"uri":"http://pool24.boxworld.org/api/v2","capabilities":[{"name":"resize","capacity":%d}]}
 			]`
-			expected = []entity.Service{
+			expected = entity.Services{
 				{
 					Uri:  "http://pool04.boxworld.org/api/v2",
 					Caps: []entity.Capability{{Name: "resize", Capacity: 23}},
@@ -120,7 +120,7 @@ var _ = Describe("Discover", func() {
 
 		When("worker has not started", func() {
 			It("returns empty services", func() {
-				Expect(dsc.Services()).To(Equal([]entity.Service{}))
+				Expect(dsc.Services()).To(Equal(entity.Services{}))
 			})
 		})
 

@@ -26,8 +26,6 @@ type Logger interface {
 
 // Poller specifies a poller, returning data every so often that might be updated.
 // Poll is expected to rate-limit itself in some reasonable way.
-//
-// Todo: consider moving interval and rate limit here.
 type Poller interface {
 	Poll(ctx context.Context) (data []byte, err error)
 }
@@ -41,30 +39,29 @@ type Router interface {
 type Discover struct {
 	Logger   Logger
 	Poller   Poller
-	services []entity.Service
+	services entity.Services
 	mu       sync.RWMutex
-	sum      string
 	hash     hash.Hash
+	sum      string
 }
 
 // Services returns a copy of available services.
-func (dsc *Discover) Services() (services []entity.Service) {
+func (dsc *Discover) Services() entity.Services {
 
 	dsc.mu.RLock()
-	services = make([]entity.Service, len(dsc.services))
-	copy(services, dsc.services)
-	dsc.mu.RUnlock()
+	defer dsc.mu.RUnlock()
 
-	return services
+	return dsc.services.Copy()
 }
 
 // Start starts the poll worker.
 func (dsc *Discover) Start(ctx context.Context, wg *sync.WaitGroup) {
 
+	// Todo: don't start more than once!!!
+
 	ctx = dsc.Logger.WithFields(ctx, "worker_id", hondo.Rand(7))
 	dsc.Logger.Info(ctx, "worker starting", "name", "discovery")
 
-	wg.Add(1)
 	go dsc.work(ctx, wg)
 }
 
@@ -77,6 +74,9 @@ func (dsc *Discover) Register(rtr Router) {
 // unexported
 
 func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
+
+	wg.Add(1)
+	defer wg.Done()
 
 	dsc.hash = fnv.New64a()
 
@@ -108,7 +108,6 @@ func (dsc *Discover) work(ctx context.Context, wg *sync.WaitGroup) {
 		dsc.mu.Unlock()
 	}
 
-	wg.Done()
 	dsc.Logger.Info(ctx, "worker stopped")
 }
 
