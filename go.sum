@@ -1,10 +1,10 @@
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
-github.com/clarktrimble/delish v0.0.2-0.20231210153756-63607e1aec1a h1:Eb9C0Une+5lLZfeywysz+yKwT7P6tk5txWHCu/j2Mh0=
-github.com/clarktrimble/delish v0.0.2-0.20231210153756-63607e1aec1a/go.mod h1:czlRAc+rC+5ng9Smf4VoM5qOI2wbo9PopKKSpup+oEY=
-github.com/clarktrimble/giant v0.0.4-0.20231209163004-64315c3d8553 h1:sQs3tCKhUoOGfM+2keOYknvBJCj3Jc7Hat9GZj6JiTc=
-github.com/clarktrimble/giant v0.0.4-0.20231209163004-64315c3d8553/go.mod h1:yhZ+EtS0qaJ42hED7hTJNvxCXbO7uAn9TYnq59cwtG8=
+github.com/clarktrimble/delish v0.0.2 h1:FU8t0M0RMpIh4kxyO9TazuMtz+bm2ofOKdnkhDP1G6Y=
+github.com/clarktrimble/delish v0.0.2/go.mod h1:czlRAc+rC+5ng9Smf4VoM5qOI2wbo9PopKKSpup+oEY=
+github.com/clarktrimble/giant v0.0.4 h1:RfWaMRf3+XgAg8U2vob0vlL9WHlVaLhZY35CIxMHm8s=
+github.com/clarktrimble/giant v0.0.4/go.mod h1:yhZ+EtS0qaJ42hED7hTJNvxCXbO7uAn9TYnq59cwtG8=
 github.com/clarktrimble/hondo v0.0.2 h1:qkMa1ck0EJcQoNnUlnA7fKo3FcdM1VggWnaC2s/6YnA=
 github.com/clarktrimble/hondo v0.0.2/go.mod h1:wsp4GvBXObPbxX+kloKVPEu9rpxbSvkGhagSvUCX9Sk=
 github.com/clarktrimble/launch v0.0.3 h1:lrcnaWYab9+GhtwQyhTolYgSW5WPyffKqEdQScCMu90=

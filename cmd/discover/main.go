@@ -1,6 +1,8 @@
 // Package main demonstrates a service that discovers other services available to it.
 package main
 
+// Todo: update modses!
+
 import (
 	"context"
 	"os"

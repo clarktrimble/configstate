@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/clarktrimble/delish/respond"
 	"github.com/clarktrimble/hondo"
 	"github.com/pkg/errors"
 
 	"configstate/entity"
-	"configstate/respond"
 )
 
 //go:generate moq -pkg mock -out mock/mock.go . Logger Poller
