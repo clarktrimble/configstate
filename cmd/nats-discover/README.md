@@ -32,7 +32,7 @@ $ docker logs -f nats01 ## as needed
 ```bash
 $ sudo apt install ./nats-0.1.1-amd64.deb
 $ nats kv add dynafig
-$ nats kv put dynafig TestoKey '{"thing":"one"}
+$ nats kv put dynafig TestoKey '{"thing":"one"}'
 $ nats kv get --raw dynafig TestoKey | jq
 ```
 
@@ -119,6 +119,8 @@ DSC_SERVER_TIMEOUT    Duration    10s                    characteristic timeout
 {"app_id":"dsc-demo","level":"info","msg":"worker starting","name":"discovery","run_id":"vslYfGx","ts":"2024-01-23T22:15:23.527994608Z","worker_id":"YZAR37K"}
 {"app_id":"dsc-demo","level":"info","msg":"starting http service","run_id":"vslYfGx","ts":"2024-01-23T22:15:23.528071682Z"}
 {"app_id":"dsc-demo","error":"json: cannot unmarshal object into Go value of type []entity.Service\nfailed to unmarshal services from: {\"thing\":\"one\"}\nconfigstate/entity.DecodeServices\n\t/home/trimble/proj/configstate/entity/service.go:29\nconfigstate/discover.(*Discover).work\n\t/home/trimble/proj/configstate/discover/discover.go:98\nruntime.goexit\n\t/home/trimble/go1211/src/runtime/asm_amd64.s:1650","level":"error","msg":"failed to watch","run_id":"vslYfGx","ts":"2024-01-23T22:15:23.528280792Z","worker_id":"YZAR37K"}
+...
+...
 ```
 
 ### Oops, forgot to load sensible json into NATS key
@@ -130,7 +132,9 @@ DSC_SERVER_TIMEOUT    Duration    10s                    characteristic timeout
 ### Woot, discover picked it up
 
 ```json
+...
 {"app_id":"dsc-demo","level":"info","msg":"updating services","run_id":"vslYfGx","ts":"2024-01-23T22:17:07.636266401Z","worker_id":"YZAR37K"}
+...
 ```
 
 ### Request via endpont
