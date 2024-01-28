@@ -26,6 +26,8 @@ type Nats struct {
 	Limiter    *rate.Limiter
 	LimitDelay time.Duration
 	updates    <-chan nats.KeyValueEntry
+	kv         keyValuer
+	//kv         nats.KeyValue
 }
 
 // New creates a Nats from Config.
@@ -41,6 +43,18 @@ func (cfg *Config) New() (nt *Nats, err error) {
 		updates: updates,
 	}
 
+	return
+}
+
+func (nt *Nats) Get(key string, rev uint64) (data []byte, err error) {
+
+	entry, err := nt.kv.GetRevision(key, rev)
+	if err != nil {
+		err = errors.Wrapf(err, "failed to get entry for key: %s rev: %d", key, rev)
+		return
+	}
+
+	data = entry.Value()
 	return
 }
 
@@ -103,4 +117,23 @@ func updateChannel(url, bucket, key string) (updates <-chan nats.KeyValueEntry, 
 
 	updates = watcher.Updates()
 	return
+}
+
+type keyValuer interface {
+	Get(key string) (entry nats.KeyValueEntry, err error)
+	GetRevision(key string, revision uint64) (entry nats.KeyValueEntry, err error)
+	Put(key string, value []byte) (revision uint64, err error)
+	PutString(key string, value string) (revision uint64, err error)
+	Create(key string, value []byte) (revision uint64, err error)
+	Update(key string, value []byte, last uint64) (revision uint64, err error)
+	Delete(key string, opts ...nats.DeleteOpt) error
+	Purge(key string, opts ...nats.DeleteOpt) error
+	Watch(keys string, opts ...nats.WatchOpt) (nats.KeyWatcher, error)
+	WatchAll(opts ...nats.WatchOpt) (nats.KeyWatcher, error)
+	Keys(opts ...nats.WatchOpt) ([]string, error)
+	ListKeys(opts ...nats.WatchOpt) (nats.KeyLister, error)
+	History(key string, opts ...nats.WatchOpt) ([]nats.KeyValueEntry, error)
+	Bucket() string
+	PurgeDeletes(opts ...nats.PurgeOpt) error
+	Status() (nats.KeyValueStatus, error)
 }
